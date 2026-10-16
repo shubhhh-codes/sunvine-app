@@ -1,0 +1,6 @@
+# Cloudflare Worker Secrets (Local development template)
+# Copy to .dev.vars (which is gitignored) and fill in your actual values.
+# NEVER commit .dev.vars or actual secret keys.
+
+SUPABASE_SERVICE_ROLE_KEY=
+APP_JWT_SECRET=

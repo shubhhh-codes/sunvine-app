@@ -1,0 +1,73 @@
+# Reference repository (origin serverless backend - do not commit or modify)
+reference/
+
+# Environment files and credentials
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+*.key
+*.p8
+*.p12
+
+# Node & Package Managers
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Cloudflare Workers & Wrangler
+.wrangler/
+.mf/
+dist/
+
+# Flutter, Dart & Pub
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+app/build/
+app/.dart_tool/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+
+# Android build outputs & local properties
+**/android/.gradle/
+**/android/local.properties
+**/android/captures/
+**/android/app/build/
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+*.apk
+*.aab
+*.dex
+
+# IDE & Editor files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.swp
+*.swo
+
+# Cloudflare secrets
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/

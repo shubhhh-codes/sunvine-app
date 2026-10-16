@@ -1,0 +1,18 @@
+{
+  "name": "sunvine-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sunvine EPC Android Monorepo: Flutter App & Cloudflare Gateway",
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "app": "cd app && flutter run --dart-define=GATEWAY_BASE_URL=http://127.0.0.1:8787",
+    "app:launch": "powershell -Command \"& \\\"$env:LOCALAPPDATA\\Android\\sdk\\platform-tools\\adb.exe\\\" shell am start -n com.sunvine.epc/.MainActivity\"",
+    "app:clean": "cd app && flutter clean && flutter pub get",
+    "app:analyze": "cd app && flutter analyze",
+    "app:test": "cd app && flutter test",
+    "gateway:dev": "cd gateway && npm run dev",
+    "gateway:test": "cd gateway && npm test",
+    "test": "npm run gateway:test && npm run app:test",
+    "check:secrets": "powershell -ExecutionPolicy Bypass -File scripts/check-no-secrets.ps1"
+  }
+}

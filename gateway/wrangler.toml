@@ -1,0 +1,35 @@
+name = "sunvine-gateway"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Default / Local development (defaults to STAGING)
+[vars]
+APP_ENV = "staging"
+SUPABASE_URL = "https://voyargkmlkrlidyxjcbk.supabase.co"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sunvine-gateway-d1"
+database_id = "local-d1"
+migrations_dir = "migrations"
+
+# Explicit STAGING Environment
+[env.staging]
+vars = { APP_ENV = "staging", SUPABASE_URL = "https://voyargkmlkrlidyxjcbk.supabase.co" }
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "sunvine-epc-staging"
+database_id = "placeholder-staging-d1-id"
+migrations_dir = "migrations"
+
+# Explicit PRODUCTION Environment (Protected / Read-Only until approved)
+[env.production]
+vars = { APP_ENV = "production", SUPABASE_URL = "https://wyberzvcyrjipjqpotwe.supabase.co" }
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "sunvine-epc-production"
+database_id = "placeholder-production-d1-id"
+migrations_dir = "migrations"

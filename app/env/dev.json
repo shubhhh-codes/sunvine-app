@@ -1,4 +1,4 @@
 {
-  "GATEWAY_BASE_URL": "http://127.0.0.1:8787",
+  "GATEWAY_BASE_URL": "https://sunvine-gateway-staging.sunvinerenewable.workers.dev",
   "APP_ENV": "dev"
 }

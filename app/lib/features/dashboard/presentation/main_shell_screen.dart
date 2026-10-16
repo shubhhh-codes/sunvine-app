@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/network/app_update_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../applications/data/applications_repository.dart';
 import '../../applications/presentation/applications_screen.dart';
@@ -107,6 +108,7 @@ class _MainShellScreenState extends State<MainShellScreen>
   }
 
   void _onNewQuote() {
+    AppLogger.action('Dealer tapped "New Quote" (Wizard)');
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Create Quotation Stepper (Wizard) will launch in Phase 1.'),
@@ -122,7 +124,10 @@ class _MainShellScreenState extends State<MainShellScreen>
         dealer: widget.dealer,
         controller: _dashboardController,
         onNewQuotePressed: _onNewQuote,
-        onApplicationsPressed: () => setState(() => _currentIndex = 2),
+        onApplicationsPressed: () {
+          AppLogger.action('Tapped "View All Applications"');
+          setState(() => _currentIndex = 2);
+        },
       ),
       QuotationsScreen(
         controller: _quotationsController,
@@ -158,7 +163,12 @@ class _MainShellScreenState extends State<MainShellScreen>
           : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
+        onTap: (index) {
+          const tabNames = ['Dashboard', 'Quotes', 'Applications', 'More'];
+          final name = index < tabNames.length ? tabNames[index] : 'Tab $index';
+          AppLogger.nav('Switched Tab: $name');
+          setState(() => _currentIndex = index);
+        },
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard_outlined),

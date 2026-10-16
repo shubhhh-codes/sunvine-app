@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../../../../core/network/api_result.dart';
+import '../../../../core/utils/app_logger.dart';
 import '../../../../core/network/token_storage.dart';
 import '../../data/auth_repository.dart';
 import '../../domain/auth_models.dart';
@@ -90,6 +91,7 @@ class AuthController extends ChangeNotifier {
       case Success(data: final session):
         _currentUser = session.user;
         _sessionState = AppSessionState.authenticated;
+        AppLogger.auth('Session Authenticated: ${session.user.dealerCode} (${session.user.contactPerson} - ${session.user.firmName}) | Tier: ${session.user.tier}');
         if (enableBiometrics) {
           final canBio = await authService.canCheckBiometrics();
           if (canBio) {
@@ -102,6 +104,7 @@ class AuthController extends ChangeNotifier {
       case FailureResult(failure: final failure):
         _errorMessage = failure.message;
         _lastStatusCode = failure.statusCode;
+        AppLogger.auth('Login Failed (${failure.statusCode}): ${failure.message}');
         notifyListeners();
         return false;
     }

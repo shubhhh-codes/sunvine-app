@@ -7,7 +7,7 @@
 
 [CmdletBinding()]
 param(
-    [string]$BaseUrl = "http://localhost:8787"
+    [string]$BaseUrl = "https://sunvine-gateway-staging.sunvinerenewable.workers.dev"
 )
 
 $ErrorActionPreference = "Stop"

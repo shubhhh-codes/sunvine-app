@@ -5,6 +5,7 @@ import 'token_storage.dart';
 import 'auth_interceptor.dart';
 import 'refresh_interceptor.dart';
 import 'error_interceptor.dart';
+import 'logging_interceptor.dart';
 
 /// Central HTTP Client wrapper configured with timeouts, auth headers, token rotation, and error translation.
 class ApiClient {
@@ -32,6 +33,7 @@ class ApiClient {
     );
 
     dio.interceptors.addAll([
+      LoggingInterceptor(),
       AuthInterceptor(tokenStorage: tokenStorage),
       RefreshInterceptor(
         dio: dio,

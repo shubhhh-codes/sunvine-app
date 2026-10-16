@@ -130,7 +130,7 @@ dealerRoutes.get('/v1/customer-files', async (c) => {
   const offset = Math.max(0, parseInt(c.req.query('offset') || '0', 10));
 
   const supabase = getSupabase(c.env);
-  const selectColumns = 'id, customer_name, phone, address, city, discom, consumer_no, sanctioned_load_kw, solar_system_kw, roof_type, source_type, dealer_id, dealer_name, staff_id, staff_name, finance_type, loan_bank, loan_account_no, quotation_id, stage, status, documents, timeline, cancellation_reason, cancelled_at, cancelled_by, is_verified, verified_at, verified_by, is_deleted, created_at, updated_at';
+  const selectColumns = 'id, customer_name, phone, address, city, discom, consumer_no, sanctioned_load_kw, solar_system_kw, roof_type, source_type, dealer_id, dealer_name, staff_id, staff_name, finance_type, loan_bank, stage, status, documents, timeline, cancellation_reason, cancelled_at, cancelled_by, is_verified, verified_at, verified_by, is_deleted, created_at, updated_at';
 
   const { data, count, error } = await supabase
     .from('customer_files')

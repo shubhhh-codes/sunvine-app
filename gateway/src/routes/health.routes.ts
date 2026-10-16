@@ -26,13 +26,20 @@ healthRoutes.get('/v1/health', async (c) => {
     d1Reachable = false;
   }
 
+  let supabaseErrorMsg: string | null = null;
   try {
     if (secretsConfigured) {
       const supabase = getSupabase(c.env);
       const { error } = await supabase.from('system_settings').select('id').limit(1);
-      supabaseReachable = !error;
+      if (error) {
+        supabaseErrorMsg = error.message;
+        supabaseReachable = false;
+      } else {
+        supabaseReachable = true;
+      }
     }
-  } catch {
+  } catch (err: any) {
+    supabaseErrorMsg = err?.message || 'Exception during Supabase query';
     supabaseReachable = false;
   }
 
@@ -41,6 +48,7 @@ healthRoutes.get('/v1/health', async (c) => {
   return c.json({
     ok,
     supabaseReachable,
+    supabaseError: supabaseErrorMsg,
     d1: d1Reachable,
     secretsConfigured,
     env: c.env.APP_ENV || 'staging',

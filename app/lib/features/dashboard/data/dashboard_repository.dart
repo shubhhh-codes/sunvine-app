@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/errors/failures.dart';
 import '../../../core/network/api_result.dart';
@@ -8,7 +9,9 @@ import '../../../core/theme/components/sun_badge.dart';
 import '../domain/dashboard_models.dart';
 
 abstract class IDashboardRepository {
-  Future<Result<DashboardOverview>> getDashboardOverview({String range = 'Last 30 Days'});
+  Future<Result<DashboardOverview>> getDashboardOverview({
+    String range = 'Last 30 Days',
+  });
 }
 
 class DashboardRepository implements IDashboardRepository {
@@ -17,25 +20,49 @@ class DashboardRepository implements IDashboardRepository {
   DashboardRepository({required this.dio});
 
   @override
-  Future<Result<DashboardOverview>> getDashboardOverview({String range = 'Last 30 Days'}) async {
+  Future<Result<DashboardOverview>> getDashboardOverview({
+    String range = 'Last 30 Days',
+  }) async {
     try {
-      // Fetch latest quotations to derive dynamic dashboard feed
-      final response = await dio.get(
-        ApiEndpoints.quotations,
-        queryParameters: {'limit': 5},
-      );
+      // Parallel fetch from database: quotations and customer applications
+      final results = await Future.wait([
+        dio.get(ApiEndpoints.quotations, queryParameters: {'limit': 100}),
+        dio.get(ApiEndpoints.customerFiles, queryParameters: {'limit': 100}),
+      ]);
+
+      final quotesRes = results[0];
+      final filesRes = results[1];
 
       final List<RecentQuoteSummary> recentQuotes = [];
+      double totalBusinessValue = 0.0;
+      double totalCapacityKw = 0.0;
+      int approvedCount = 0;
+      int totalQuotesCount = 0;
 
-      if (response.statusCode == 200 && response.data != null) {
-        final data = response.data;
+      if (quotesRes.statusCode == 200 && quotesRes.data != null) {
+        final data = quotesRes.data;
         final list = (data is Map && data['quotations'] is List)
             ? data['quotations'] as List
             : [];
+        totalQuotesCount = (data is Map && data['total'] is int)
+            ? data['total'] as int
+            : list.length;
 
         for (final item in list) {
           if (item is Map) {
+            final cap = (item['system_capacity_kw'] as num?)?.toDouble() ?? 0.0;
+            final amt = (item['total_amount'] as num?)?.toDouble() ?? 0.0;
             final statusStr = (item['status'] as String? ?? 'DRAFT').toUpperCase();
+
+            totalBusinessValue += amt;
+            totalCapacityKw += cap;
+
+            if (statusStr == 'APPROVED' ||
+                statusStr == 'CONFIRMED' ||
+                statusStr == 'CONVERTED') {
+              approvedCount++;
+            }
+
             final variant = switch (statusStr) {
               'APPROVED' => SunBadgeVariant.emerald,
               'CONFIRMED' => SunBadgeVariant.cyan,
@@ -43,91 +70,107 @@ class DashboardRepository implements IDashboardRepository {
               _ => SunBadgeVariant.slate,
             };
 
-            recentQuotes.add(
-              RecentQuoteSummary(
-                id: item['id']?.toString() ?? '',
-                customerName: item['customer_name']?.toString() ?? 'Prospective Client',
-                capacity: '${item['system_capacity_kw'] ?? 3.0} kW',
-                amount: '₹${item['total_amount'] ?? '0'}',
-                date: item['created_at'] != null
-                    ? (item['created_at'] as String).substring(0, 10)
-                    : 'Recent',
-                status: statusStr,
-                badgeVariant: variant,
-              ),
-            );
+            if (recentQuotes.length < 5) {
+              recentQuotes.add(
+                RecentQuoteSummary(
+                  id: item['id']?.toString() ?? '',
+                  customerName:
+                      item['customer_name']?.toString() ?? 'Prospective Client',
+                  capacity: '${cap.toStringAsFixed(1)} kW',
+                  amount: '₹${amt.toStringAsFixed(0)}',
+                  date: item['created_at'] != null
+                      ? (item['created_at'] as String).substring(0, 10)
+                      : 'Recent',
+                  status: statusStr,
+                  badgeVariant: variant,
+                ),
+              );
+            }
           }
         }
       }
 
-      // If quotes empty or offline mock fallback, provide structured telemetry
-      if (recentQuotes.isEmpty) {
-        recentQuotes.addAll(const [
-          RecentQuoteSummary(
-            id: 'SV-2026-081',
-            customerName: 'Kishorebhai Patel',
-            capacity: '4.4 kW',
-            amount: '₹2,24,000',
-            date: 'Today, 10:30 AM',
-            status: 'APPROVED',
-            badgeVariant: SunBadgeVariant.emerald,
-          ),
-          RecentQuoteSummary(
-            id: 'SV-2026-080',
-            customerName: 'Jayeshbhai Shah',
-            capacity: '3.3 kW',
-            amount: '₹1,75,000',
-            date: 'Yesterday',
-            status: 'IN REVIEW',
-            badgeVariant: SunBadgeVariant.amber,
-          ),
-          RecentQuoteSummary(
-            id: 'SV-2026-079',
-            customerName: 'Ashwin Solanki',
-            capacity: '5.0 kW',
-            amount: '₹2,58,000',
-            date: '14 Oct 2026',
-            status: 'CONFIRMED',
-            badgeVariant: SunBadgeVariant.cyan,
-          ),
-        ]);
+      // Customer applications count from customer_files table
+      int totalFilesCount = 0;
+      int activeFilesCount = 0;
+
+      if (filesRes.statusCode == 200 && filesRes.data != null) {
+        final fData = filesRes.data;
+        final fList = (fData is Map && fData['files'] is List)
+            ? fData['files'] as List
+            : [];
+        totalFilesCount = (fData is Map && fData['total'] is int)
+            ? fData['total'] as int
+            : fList.length;
+
+        for (final f in fList) {
+          if (f is Map) {
+            final st = (f['status'] as String? ?? '').toLowerCase();
+            if (!st.contains('cancelled') && !st.contains('deleted')) {
+              activeFilesCount++;
+            }
+          }
+        }
       }
 
-      final kpis = const [
+      // Format authentic KPI metrics matching web app format
+      final String formattedValue = totalBusinessValue >= 10000000
+          ? '₹${(totalBusinessValue / 10000000).toStringAsFixed(2)} Cr'
+          : (totalBusinessValue >= 100000
+              ? '₹${(totalBusinessValue / 100000).toStringAsFixed(2)} L'
+              : '₹${totalBusinessValue.toStringAsFixed(0)}');
+
+      final String conversionRate = totalQuotesCount > 0
+          ? '${((approvedCount / totalQuotesCount) * 100).toStringAsFixed(0)}%'
+          : '0%';
+
+      final kpis = [
         DashboardKpi(
           title: 'BUSINESS VALUE',
-          value: '₹14.85 L',
-          subtitle: '+18% vs prev period',
+          value: formattedValue,
+          subtitle: totalQuotesCount > 0
+              ? '$totalQuotesCount proposals generated'
+              : '0 proposals generated',
           icon: Icons.currency_rupee_rounded,
           accentColor: AppColors.emerald,
         ),
         DashboardKpi(
           title: 'SIZING VOLUME',
-          value: '42.5 kW',
-          subtitle: '9 systems quoted',
+          value: '${totalCapacityKw.toStringAsFixed(1)} kW',
+          subtitle: totalQuotesCount > 0
+              ? '$totalQuotesCount systems quoted'
+              : '0 kW quoted',
           icon: Icons.bolt_rounded,
           accentColor: AppColors.teal,
         ),
         DashboardKpi(
-          title: 'TARGET PROGRESS',
-          value: '68%',
-          subtitle: '42.5 / 62 kW target',
-          icon: Icons.track_changes_rounded,
-          accentColor: AppColors.amber,
+          title: 'APPLICATIONS',
+          value: '$totalFilesCount',
+          subtitle: totalFilesCount > 0
+              ? '$activeFilesCount in progress'
+              : '0 active files',
+          icon: Icons.folder_shared_rounded,
+          accentColor: AppColors.cyan,
         ),
         DashboardKpi(
           title: 'CONVERSION',
-          value: '72%',
-          subtitle: '6 converted / 2 pending',
+          value: conversionRate,
+          subtitle: totalQuotesCount > 0
+              ? '$approvedCount approved'
+              : 'Ready to quote',
           icon: Icons.pie_chart_outline_rounded,
-          accentColor: AppColors.cyan,
+          accentColor: AppColors.amber,
         ),
       ];
 
-      return Result.success(DashboardOverview(kpis: kpis, recentQuotes: recentQuotes));
+      return Result.success(
+        DashboardOverview(kpis: kpis, recentQuotes: recentQuotes),
+      );
     } catch (e) {
       // Fallback with structured error or default telemetry
-      return Result.failure(ServerFailure('Failed to load dashboard overview: $e'));
+      return Result.failure(
+        ServerFailure('Failed to load dashboard overview: $e'),
+      );
     }
   }
 }

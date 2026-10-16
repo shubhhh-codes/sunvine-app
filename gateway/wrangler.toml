@@ -21,7 +21,7 @@ vars = { APP_ENV = "staging", SUPABASE_URL = "https://voyargkmlkrlidyxjcbk.supab
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "sunvine-epc-staging"
-database_id = "placeholder-staging-d1-id"
+database_id = "50663b22-e6ae-45a2-86b2-9be985445c8c"
 migrations_dir = "migrations"
 
 # Explicit PRODUCTION Environment (Protected / Read-Only until approved)

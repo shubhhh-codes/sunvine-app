@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/network/token_storage.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/widgets.dart';
 import '../data/auth_repository.dart';
@@ -87,6 +88,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final phone = _phoneController.text.trim();
     final password = _passwordController.text;
+
+    AppLogger.action('Dealer tapped "Sign In" (Mobile: $phone)');
 
     final success = await _controller.login(
       phone: phone,

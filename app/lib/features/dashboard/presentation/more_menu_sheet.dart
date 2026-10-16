@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../auth/domain/auth_models.dart';
 import '../../ledger/data/ledger_repository.dart';
@@ -124,8 +125,10 @@ class MoreMenuSheet extends StatelessWidget {
                 title: 'Diagnostics & Gateway Health',
                 subtitle: 'Verify connection, environment, and health status',
                 onTap: () {
+                  AppLogger.action('Opened Diagnostics Screen');
                   Navigator.of(context).push(
                     MaterialPageRoute(
+                      settings: const RouteSettings(name: 'DiagnosticsScreen'),
                       builder: (_) => DiagnosticsScreen(dio: dio!),
                     ),
                   );
@@ -137,7 +140,10 @@ class MoreMenuSheet extends StatelessWidget {
               title: 'Sign Out',
               subtitle: 'End dealer session on this device',
               isDanger: true,
-              onTap: onLogout,
+              onTap: () {
+                AppLogger.action('Dealer tapped "Sign Out"');
+                onLogout();
+              },
             ),
             const SizedBox(height: 32),
           ],

@@ -9,7 +9,7 @@ console.log('\x1b[36m%s\x1b[0m', '⚡ Starting Sunvine EPC with Auto Hot-Reload 
 
 const flutter = spawn('flutter', [
   'run',
-  '--dart-define=GATEWAY_BASE_URL=http://127.0.0.1:8787'
+  '--dart-define=GATEWAY_BASE_URL=https://sunvine-gateway-staging.sunvinerenewable.workers.dev'
 ], {
   cwd: appDir,
   shell: true,

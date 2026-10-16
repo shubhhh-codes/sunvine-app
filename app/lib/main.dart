@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'core/network/api_client.dart';
 import 'core/network/app_update_service.dart';
 import 'core/network/token_storage.dart';
+import 'core/config/app_config.dart';
 import 'core/services/device_info_service.dart';
+import 'core/utils/app_logger.dart';
+import 'core/utils/app_nav_observer.dart';
 import 'core/state/service_locator.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
@@ -16,6 +19,7 @@ import 'features/dashboard/presentation/main_shell_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  AppLogger.state('App Bootstrapped | Env: ${AppConfig.envName} | BaseUrl: ${AppConfig.gatewayBaseUrl}');
   setupDependencies();
   runApp(const SunvineEpcApp());
 }
@@ -111,6 +115,7 @@ class _SunvineEpcAppState extends State<SunvineEpcApp> {
       title: 'Sunvine EPC',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
+      navigatorObservers: [AppNavObserver()],
       scaffoldMessengerKey: _scaffoldMessengerKey,
       home: ListenableBuilder(
         listenable: _authController,

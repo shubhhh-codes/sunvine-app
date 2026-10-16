@@ -27,12 +27,12 @@ class AppConfig {
 
   static const String _envString = String.fromEnvironment(
     'APP_ENV',
-    defaultValue: 'dev',
+    defaultValue: 'staging',
   );
 
   static const String _baseUrl = String.fromEnvironment(
     'GATEWAY_BASE_URL',
-    defaultValue: 'http://127.0.0.1:8787',
+    defaultValue: 'https://sunvine-gateway-staging.sunvinerenewable.workers.dev',
   );
 
   /// Current active environment profile.

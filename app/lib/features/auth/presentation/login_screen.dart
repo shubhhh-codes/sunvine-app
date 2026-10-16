@@ -127,36 +127,36 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Glowing Logo & Header
+                    // Official Sunvine Brand Logo & Header
                     Center(
                       child: Container(
-                        width: 72,
-                        height: 72,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                         decoration: BoxDecoration(
-                          gradient: AppColors.energyGradient,
-                          borderRadius: BorderRadius.circular(20),
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.border),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.emerald.withValues(alpha: 0.35),
-                              blurRadius: 24,
+                              color: AppColors.emerald.withValues(alpha: 0.15),
+                              blurRadius: 28,
                               offset: const Offset(0, 8),
                             ),
                           ],
                         ),
-                        child: const Icon(
-                          Icons.solar_power_rounded,
-                          size: 40,
-                          color: Colors.white,
+                        child: Image.asset(
+                          'assets/images/sunvine_logo_white.png',
+                          height: 48,
+                          fit: BoxFit.contain,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 18),
 
                     // Brand Headline
                     Center(
                       child: Text(
-                        'Sunvine EPC',
-                        style: AppTypography.displayMedium,
+                        'EPC Dealer Portal',
+                        style: AppTypography.displayMedium.copyWith(fontSize: 22),
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -166,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         variant: SunBadgeVariant.emerald,
                       ),
                     ),
-                    const SizedBox(height: 36),
+                    const SizedBox(height: 32),
 
                     // General Error Alert (with distinction between 401 & 403)
                     if (generalError != null) ...[

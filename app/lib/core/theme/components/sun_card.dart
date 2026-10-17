@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../app_colors.dart';
 
-class SunCard extends StatelessWidget {
+class SunCard extends StatefulWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
   final VoidCallback? onTap;
@@ -20,30 +21,51 @@ class SunCard extends StatelessWidget {
   });
 
   @override
+  State<SunCard> createState() => _SunCardState();
+}
+
+class _SunCardState extends State<SunCard> {
+  bool _isPressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    final cardContent = Container(
+    final cardContent = AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeOut,
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.surface,
-        borderRadius: BorderRadius.circular(borderRadius),
-        border: border ?? Border.all(color: AppColors.border, width: 1.0),
-        boxShadow: const [
+        color: widget.backgroundColor ?? AppColors.surface,
+        borderRadius: BorderRadius.circular(widget.borderRadius),
+        border:
+            widget.border ??
+            Border.all(
+              color: _isPressed
+                  ? AppColors.emerald.withValues(alpha: 0.5)
+                  : AppColors.border,
+              width: 1.0,
+            ),
+        boxShadow: [
           BoxShadow(
-            color: AppColors.cardShadow,
-            blurRadius: 10,
-            offset: Offset(0, 4),
+            color: _isPressed
+                ? AppColors.emerald.withValues(alpha: 0.1)
+                : AppColors.cardShadow,
+            blurRadius: _isPressed ? 14 : 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      padding: padding,
-      child: child,
+      padding: widget.padding,
+      child: widget.child,
     );
 
-    if (onTap != null) {
+    if (widget.onTap != null) {
       return Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(borderRadius),
+          onTap: widget.onTap,
+          onTapDown: (_) => setState(() => _isPressed = true),
+          onTapUp: (_) => setState(() => _isPressed = false),
+          onTapCancel: () => setState(() => _isPressed = false),
+          borderRadius: BorderRadius.circular(widget.borderRadius),
           child: cardContent,
         ),
       );

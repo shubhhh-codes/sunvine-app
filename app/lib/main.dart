@@ -16,6 +16,8 @@ import 'features/auth/presentation/biometric_gate_screen.dart';
 import 'features/auth/presentation/controllers/auth_controller.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/dashboard/presentation/main_shell_screen.dart';
+import 'core/services/auto_sync_service.dart';
+import 'features/quotations/data/quotations_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,6 +68,8 @@ void setupDependencies({bool force = false}) {
   );
 
   final appUpdateService = AppUpdateService(dio: apiClient.dio);
+  final quotationsRepository = QuotationsRepository(dio: apiClient.dio);
+  final autoSyncService = AutoSyncService(quotationsRepository: quotationsRepository);
 
   ServiceLocator.registerSingleton<TokenStorage>(tokenStorage);
   ServiceLocator.registerSingleton<DeviceInfoService>(deviceInfoService);
@@ -74,6 +78,8 @@ void setupDependencies({bool force = false}) {
   ServiceLocator.registerSingleton<AuthService>(authService);
   ServiceLocator.registerSingleton<AuthController>(authController);
   ServiceLocator.registerSingleton<AppUpdateService>(appUpdateService);
+  ServiceLocator.registerSingleton<IQuotationsRepository>(quotationsRepository);
+  ServiceLocator.registerSingleton<AutoSyncService>(autoSyncService);
 }
 
 /// Root widget for Sunvine EPC Dealer Mobile Application.

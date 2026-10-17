@@ -51,10 +51,7 @@ const server = http.createServer((req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`Sunvine EPC Desktop Web Server running at http://localhost:${PORT}`);
-
-  // Find Chrome or Edge to launch in standalone mobile app window mode
+function launchBrowser() {
   const candidates = [
     'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
     'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
@@ -62,7 +59,7 @@ server.listen(PORT, () => {
     'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
   ];
 
-  let browserPath = candidates.find((p) => fs.existsSync(p));
+  const browserPath = candidates.find((p) => fs.existsSync(p));
 
   if (browserPath) {
     console.log(`Launching standalone mobile app window with ${path.basename(browserPath)}...`);
@@ -79,4 +76,19 @@ server.listen(PORT, () => {
   } else {
     console.log(`Please open http://localhost:${PORT} in your browser.`);
   }
+}
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.log(`Port ${PORT} is already active. Launching mobile app window...`);
+    launchBrowser();
+  } else {
+    console.error('Server error:', err);
+    process.exit(1);
+  }
+});
+
+server.listen(PORT, () => {
+  console.log(`Sunvine EPC Desktop Web Server running at http://localhost:${PORT}`);
+  launchBrowser();
 });

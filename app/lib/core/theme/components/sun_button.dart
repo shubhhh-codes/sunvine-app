@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../app_colors.dart';
 import '../app_typography.dart';
 
 enum SunButtonVariant { primary, secondary, danger }
 
-class SunButton extends StatelessWidget {
+class SunButton extends StatefulWidget {
   final String text;
   final VoidCallback? onPressed;
   final SunButtonVariant variant;
@@ -25,13 +26,20 @@ class SunButton extends StatelessWidget {
   });
 
   @override
+  State<SunButton> createState() => _SunButtonState();
+}
+
+class _SunButtonState extends State<SunButton> {
+  bool _isPressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    final bool enabled = onPressed != null && !isLoading;
+    final bool enabled = widget.onPressed != null && !widget.isLoading;
 
     BoxDecoration decoration;
     Color textColor = AppColors.textPrimary;
 
-    switch (variant) {
+    switch (widget.variant) {
       case SunButtonVariant.primary:
         decoration = BoxDecoration(
           gradient: enabled ? AppColors.energyGradient : null,
@@ -43,7 +51,7 @@ class SunButton extends StatelessWidget {
                     color: AppColors.emerald.withValues(alpha: 0.25),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ]
               : null,
         );
@@ -54,16 +62,22 @@ class SunButton extends StatelessWidget {
         decoration = BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: enabled ? AppColors.border : AppColors.borderLight),
+          border: Border.all(
+            color: enabled ? AppColors.border : AppColors.borderLight,
+          ),
         );
         textColor = enabled ? AppColors.textPrimary : AppColors.textDisabled;
         break;
 
       case SunButtonVariant.danger:
         decoration = BoxDecoration(
-          color: enabled ? AppColors.rose.withValues(alpha: 0.15) : AppColors.surface,
+          color: enabled
+              ? AppColors.rose.withValues(alpha: 0.15)
+              : AppColors.surface,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: enabled ? AppColors.rose : AppColors.border),
+          border: Border.all(
+            color: enabled ? AppColors.rose : AppColors.border,
+          ),
         );
         textColor = enabled ? AppColors.rose : AppColors.textDisabled;
         break;
@@ -75,37 +89,49 @@ class SunButton extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: enabled ? onPressed : null,
+          onTap: enabled ? widget.onPressed : null,
+          onTapDown: enabled ? (_) => setState(() => _isPressed = true) : null,
+          onTapUp: enabled ? (_) => setState(() => _isPressed = false) : null,
+          onTapCancel: enabled
+              ? () => setState(() => _isPressed = false)
+              : null,
           borderRadius: BorderRadius.circular(10),
-          child: Container(
-            width: width ?? double.infinity,
-            height: height,
-            decoration: decoration,
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (icon != null) ...[
-                        Icon(icon, size: 18, color: textColor),
-                        const SizedBox(width: 8),
-                      ],
-                      Text(
-                        text,
-                        style: AppTypography.labelLarge.copyWith(color: textColor),
+          child: AnimatedScale(
+            scale: _isPressed ? 0.98 : 1.0,
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeInOut,
+            child: Container(
+              width: widget.width ?? double.infinity,
+              height: widget.height,
+              decoration: decoration,
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: widget.isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
-                    ],
-                  ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (widget.icon != null) ...[
+                          Icon(widget.icon, size: 18, color: textColor),
+                          const SizedBox(width: 8),
+                        ],
+                        Text(
+                          widget.text,
+                          style: AppTypography.labelLarge.copyWith(
+                            color: textColor,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),

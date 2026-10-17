@@ -3,6 +3,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/widgets.dart';
 import 'controllers/quotations_controller.dart';
 import 'widgets/quotation_card_widget.dart';
+import 'quotation_detail_screen.dart';
 
 /// Presentation screen for viewing and searching consumer solar proposals.
 class QuotationsScreen extends StatefulWidget {
@@ -113,7 +114,30 @@ class _QuotationsScreenState extends State<QuotationsScreen> {
                         separatorBuilder: (_, _) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           final quote = quotes[index];
-                          return QuotationCardWidget(quotation: quote);
+                          return QuotationCardWidget(
+                            quotation: quote,
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => QuotationDetailScreen(
+                                    quoteData: {
+                                      'id': quote.quoteNumber,
+                                      'quoteNumber': quote.quoteNumber,
+                                      'customerName': quote.customerName,
+                                      'customerPhone': quote.customerPhone,
+                                      'city': quote.customerCity,
+                                      'location': quote.customerCity,
+                                      'systemCapacityKW': quote.systemCapacityKw,
+                                      'totalAmount': quote.totalAmount,
+                                      'subsidyAmount': quote.subsidyAmount,
+                                      'netPayable': quote.netPayable,
+                                      'status': quote.status,
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
+                          );
                         },
                       ),
                     );

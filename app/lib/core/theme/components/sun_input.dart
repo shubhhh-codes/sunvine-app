@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../app_colors.dart';
 import '../app_typography.dart';
 
@@ -48,13 +49,17 @@ class SunInput extends StatelessWidget {
           Text(
             label!,
             style: AppTypography.labelMedium.copyWith(
-              color: errorText != null ? AppColors.rose : AppColors.textSecondary,
+              color: errorText != null
+                  ? AppColors.rose
+                  : AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 6),
         ],
         ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 48), // Touch target >= 48dp
+          constraints: const BoxConstraints(
+            minHeight: 48,
+          ), // Touch target >= 48dp
           child: TextField(
             controller: controller,
             focusNode: focusNode,
@@ -65,24 +70,37 @@ class SunInput extends StatelessWidget {
             maxLines: maxLines,
             onChanged: onChanged,
             onSubmitted: onSubmitted,
-            style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textPrimary,
+            ),
             cursorColor: AppColors.emerald,
             decoration: InputDecoration(
               filled: true,
               fillColor: AppColors.inputBackground,
               hintText: hintText,
-              hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textMuted),
+              hintStyle: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textMuted,
+              ),
               prefixIcon: prefixIcon,
               suffixIcon: suffixIcon,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 14,
+              ),
               isDense: true,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.border, width: 1.0),
+                borderSide: const BorderSide(
+                  color: AppColors.border,
+                  width: 1.0,
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.emerald, width: 1.5),
+                borderSide: const BorderSide(
+                  color: AppColors.emerald,
+                  width: 1.5,
+                ),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -94,24 +112,53 @@ class SunInput extends StatelessWidget {
               ),
               disabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.5), width: 1.0),
+                borderSide: BorderSide(
+                  color: AppColors.border.withValues(alpha: 0.5),
+                  width: 1.0,
+                ),
               ),
             ),
           ),
         ),
-        if (errorText != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            errorText!,
-            style: AppTypography.bodySmall.copyWith(color: AppColors.rose),
-          ),
-        ] else if (helperText != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            helperText!,
-            style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted),
-          ),
-        ],
+        AnimatedSize(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+          child: errorText != null
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 4.0),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        size: 13,
+                        color: AppColors.rose,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          errorText!,
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.rose,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : (helperText != null
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Text(
+                          helperText!,
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      )
+                    : const SizedBox.shrink()),
+        ),
       ],
     );
   }

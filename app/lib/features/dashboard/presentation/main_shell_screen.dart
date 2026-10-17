@@ -17,6 +17,9 @@ import '../../dashboard/presentation/more_menu_sheet.dart';
 import '../../quotations/data/quotations_repository.dart';
 import '../../quotations/presentation/controllers/quotations_controller.dart';
 import '../../quotations/presentation/quotations_screen.dart';
+import '../../quotations/presentation/create_quotation_stepper_screen.dart';
+import '../../../core/state/service_locator.dart';
+import '../../../core/services/auto_sync_service.dart';
 
 /// Top-level shell hosting BottomNavigationBar and the 4 primary tabs.
 class MainShellScreen extends StatefulWidget {
@@ -61,6 +64,11 @@ class _MainShellScreenState extends State<MainShellScreen>
     _quotationsController = QuotationsController(repository: QuotationsRepository(dio: dio));
     _applicationsController = ApplicationsController(repository: ApplicationsRepository(dio: dio));
 
+    // Connect AutoSyncService listener
+    if (ServiceLocator.isRegistered<AutoSyncService>()) {
+      ServiceLocator.autoSyncService.addListener(_onAutoSyncCompleted);
+    }
+
     // Non-blocking in-app version update check on launch
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkForAppUpdate();
@@ -98,8 +106,25 @@ class _MainShellScreenState extends State<MainShellScreen>
     }
   }
 
+  void _onAutoSyncCompleted(int count) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('⚡ Auto-synced $count offline quotation(s) to cloud!'),
+          backgroundColor: AppColors.primary,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      _quotationsController.loadQuotations();
+      _dashboardController.loadDashboard();
+    }
+  }
+
   @override
   void dispose() {
+    if (ServiceLocator.isRegistered<AutoSyncService>()) {
+      ServiceLocator.autoSyncService.removeListener(_onAutoSyncCompleted);
+    }
     WidgetsBinding.instance.removeObserver(this);
     _dashboardController.dispose();
     _quotationsController.dispose();
@@ -107,14 +132,18 @@ class _MainShellScreenState extends State<MainShellScreen>
     super.dispose();
   }
 
-  void _onNewQuote() {
-    AppLogger.action('Dealer tapped "New Quote" (Wizard)');
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Create Quotation Stepper (Wizard) will launch in Phase 1.'),
-        duration: Duration(seconds: 2),
+  Future<void> _onNewQuote() async {
+    AppLogger.action('Dealer tapped "New Quote"');
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => const CreateQuotationStepperScreen(),
       ),
     );
+
+    if (result == true) {
+      _quotationsController.loadQuotations();
+      _dashboardController.loadDashboard();
+    }
   }
 
   @override

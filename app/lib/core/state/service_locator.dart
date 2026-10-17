@@ -1,3 +1,9 @@
+import '../../features/auth/data/auth_repository.dart';
+import '../../features/auth/domain/auth_service.dart';
+import '../../features/auth/presentation/controllers/auth_controller.dart';
+import '../../features/quotations/data/quotations_repository.dart';
+import '../services/auto_sync_service.dart';
+
 /// A lightweight, zero-dependency service locator for Dependency Injection.
 ///
 /// Enables clean decoupling between data repositories, services, controllers, and UI.
@@ -37,7 +43,14 @@ class ServiceLocator {
 
   /// Resets all registered singletons and factories (useful for unit/widget testing).
   static void reset() {
-    _instances.clear;
+    _instances.clear();
     _factories.clear();
   }
+
+  // Convenient static accessors
+  static AuthService get authService => get<AuthService>();
+  static AuthRepository get authRepository => get<AuthRepository>();
+  static AuthController get authController => get<AuthController>();
+  static IQuotationsRepository get quotationsRepository => get<IQuotationsRepository>();
+  static AutoSyncService get autoSyncService => get<AutoSyncService>();
 }

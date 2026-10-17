@@ -36,4 +36,10 @@ class AppColors {
   // Functional Surfaces
   static const Color cardShadow = Color(0x66000000);
   static const Color inputBackground = Color(0xFF0A1120);
+
+  // Material Theme Aliases
+  static const Color primary = emerald;
+  static const Color secondary = teal;
+  static const Color background = canvas;
+  static const Color surfaceContainerHigh = surfaceHover;
 }

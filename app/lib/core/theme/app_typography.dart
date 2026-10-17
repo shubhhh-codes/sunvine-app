@@ -90,4 +90,9 @@ class AppTypography {
     fontWeight: FontWeight.w500,
     color: AppColors.textSecondary,
   );
+
+  // Material Theme Aliases
+  static TextStyle get headlineLarge => displayLarge;
+  static TextStyle get headlineMedium => displayMedium;
+  static TextStyle get headlineSmall => titleLarge;
 }

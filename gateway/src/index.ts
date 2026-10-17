@@ -22,14 +22,15 @@ export const app = new Hono<{ Bindings: Env; Variables: { dealerId: string } }>(
 app.use('*', async (c, next) => {
   if (c.req.method === 'OPTIONS') {
     c.header('Access-Control-Allow-Origin', '*');
-    c.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    c.header('Access-Control-Allow-Headers', '*');
+    c.header('Access-Control-Max-Age', '86400');
     return c.text('', 204);
   }
 
   c.header('Access-Control-Allow-Origin', '*');
-  c.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  c.header('Access-Control-Allow-Headers', '*');
 
   // Verify environment safety guard
   const envCheck = validateEnvironment(c.env);

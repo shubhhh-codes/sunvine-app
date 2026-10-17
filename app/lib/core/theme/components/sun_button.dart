@@ -10,6 +10,7 @@ class SunButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final SunButtonVariant variant;
   final bool isLoading;
+  final bool isSubdued;
   final IconData? icon;
   final double? width;
   final double height;
@@ -20,6 +21,7 @@ class SunButton extends StatefulWidget {
     this.onPressed,
     this.variant = SunButtonVariant.primary,
     this.isLoading = false,
+    this.isSubdued = false,
     this.icon,
     this.width,
     this.height = 50.0, // Touch target >= 48dp
@@ -41,21 +43,30 @@ class _SunButtonState extends State<SunButton> {
 
     switch (widget.variant) {
       case SunButtonVariant.primary:
-        decoration = BoxDecoration(
-          gradient: enabled ? AppColors.energyGradient : null,
-          color: enabled ? null : AppColors.surfaceHover,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: enabled
-              ? [
-                  BoxShadow(
-                    color: AppColors.emerald.withValues(alpha: 0.25),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        );
-        textColor = Colors.white;
+        if (widget.isSubdued && enabled) {
+          decoration = BoxDecoration(
+            color: AppColors.surfaceHover,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.border),
+          );
+          textColor = AppColors.textSecondary;
+        } else {
+          decoration = BoxDecoration(
+            gradient: enabled ? AppColors.energyGradient : null,
+            color: enabled ? null : AppColors.surfaceHover,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: enabled
+                ? [
+                    BoxShadow(
+                      color: AppColors.emerald.withValues(alpha: 0.25),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
+          );
+          textColor = enabled ? Colors.white : AppColors.textDisabled;
+        }
         break;
 
       case SunButtonVariant.secondary:
@@ -83,6 +94,9 @@ class _SunButtonState extends State<SunButton> {
         break;
     }
 
+    final bool disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+
     return Semantics(
       button: true,
       enabled: enabled,
@@ -97,8 +111,10 @@ class _SunButtonState extends State<SunButton> {
               : null,
           borderRadius: BorderRadius.circular(10),
           child: AnimatedScale(
-            scale: _isPressed ? 0.98 : 1.0,
-            duration: const Duration(milliseconds: 100),
+            scale: (_isPressed && !disableAnimations) ? 0.98 : 1.0,
+            duration: disableAnimations
+                ? Duration.zero
+                : const Duration(milliseconds: 100),
             curve: Curves.easeInOut,
             child: Container(
               width: widget.width ?? double.infinity,

@@ -121,7 +121,9 @@ class SunInput extends StatelessWidget {
           ),
         ),
         AnimatedSize(
-          duration: const Duration(milliseconds: 150),
+          duration: (MediaQuery.maybeOf(context)?.disableAnimations ?? false)
+              ? Duration.zero
+              : const Duration(milliseconds: 150),
           curve: Curves.easeOut,
           child: errorText != null
               ? Padding(

@@ -29,8 +29,13 @@ class _SunCardState extends State<SunCard> {
 
   @override
   Widget build(BuildContext context) {
+    final bool disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+
     final cardContent = AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
+      duration: disableAnimations
+          ? Duration.zero
+          : const Duration(milliseconds: 150),
       curve: Curves.easeOut,
       decoration: BoxDecoration(
         color: widget.backgroundColor ?? AppColors.surface,

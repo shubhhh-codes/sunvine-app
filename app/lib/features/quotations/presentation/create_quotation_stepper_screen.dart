@@ -169,21 +169,34 @@ class _CreateQuotationStepperScreenState
           );
         }
 
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          appBar: AppBar(
-            backgroundColor: AppColors.surface,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-              onPressed: () {
-                if (_controller.currentStep > 0) {
-                  _controller.previousStep();
-                } else {
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
+        final bool isKeyboardOpen =
+            MediaQuery.viewInsetsOf(context).bottom > 80;
+
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) return;
+            if (_controller.currentStep > 0) {
+              _controller.previousStep();
+            } else {
+              Navigator.of(context).pop();
+            }
+          },
+          child: Scaffold(
+            backgroundColor: AppColors.background,
+            appBar: AppBar(
+              backgroundColor: AppColors.surface,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+                onPressed: () {
+                  if (_controller.currentStep > 0) {
+                    _controller.previousStep();
+                  } else {
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -204,52 +217,61 @@ class _CreateQuotationStepperScreenState
               ],
             ),
           ),
-          body: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
-              child: Column(
-                children: [
-                  // Step Progress Indicator Bar
-                  _buildStepIndicator(),
+          body: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            behavior: HitTestBehavior.translucent,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: Column(
+                  children: [
+                    // Step Progress Indicator Bar
+                    _buildStepIndicator(),
 
-                  // Active Step Body with Smooth Transition
-                  Expanded(
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
-                      switchInCurve: Curves.easeOut,
-                      switchOutCurve: Curves.easeIn,
-                      transitionBuilder: (child, animation) {
-                        return FadeTransition(opacity: animation, child: child);
-                      },
-                      child: KeyedSubtree(
-                        key: ValueKey<int>(_controller.currentStep),
-                        child: IndexedStack(
-                          index: _controller.currentStep,
-                          children: [
-                            Step1CustomerDiscom(controller: _controller),
-                            Step2SolarSizing(controller: _controller),
-                            Step3PricingMargin(controller: _controller),
-                            Step4ReviewSubmit(
-                              controller: _controller,
-                              onSaveDraft: _handleSaveDraft,
-                              onSubmitOnline: _handleSubmitOnline,
-                            ),
-                          ],
+                    // Active Step Body with Smooth Transition
+                    Expanded(
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        switchInCurve: Curves.easeOut,
+                        switchOutCurve: Curves.easeIn,
+                        transitionBuilder: (child, animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          );
+                        },
+                        child: KeyedSubtree(
+                          key: ValueKey<int>(_controller.currentStep),
+                          child: IndexedStack(
+                            index: _controller.currentStep,
+                            children: [
+                              Step1CustomerDiscom(controller: _controller),
+                              Step2SolarSizing(controller: _controller),
+                              Step3PricingMargin(controller: _controller),
+                              Step4ReviewSubmit(
+                                controller: _controller,
+                                onSaveDraft: _handleSaveDraft,
+                                onSubmitOnline: _handleSubmitOnline,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
 
-                  // Bottom Navigation Bar (Steps 0 - 2)
-                  if (_controller.currentStep < 3) _buildBottomBar(),
-                ],
+                    // Bottom Navigation Bar (Steps 0 - 2, hidden when keyboard is open)
+                    if (_controller.currentStep < 3 && !isKeyboardOpen)
+                      _buildBottomBar(),
+                  ],
+                ),
               ),
             ),
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
   Widget _buildStepIndicator() {
     final stepTitles = ['Customer', 'Solar Tech', 'Pricing', 'Review'];
@@ -359,6 +381,9 @@ class _CreateQuotationStepperScreenState
   }
 
   Widget _buildBottomBar() {
+    final bool isStep0 = _controller.currentStep == 0;
+    final bool isSubdued = isStep0 && !_controller.isStep1Filled;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
@@ -374,9 +399,7 @@ class _CreateQuotationStepperScreenState
                 child: SunButton(
                   text: 'Back',
                   variant: SunButtonVariant.secondary,
-                  onPressed: _controller.isNavigating
-                      ? null
-                      : _controller.previousStep,
+                  onPressed: _controller.previousStep,
                 ),
               ),
               const SizedBox(width: 12),
@@ -386,10 +409,9 @@ class _CreateQuotationStepperScreenState
               child: SunButton(
                 text: 'Continue',
                 variant: SunButtonVariant.primary,
+                isSubdued: isSubdued,
                 icon: Icons.arrow_forward,
-                onPressed: _controller.isNavigating
-                    ? null
-                    : _handleContinueStep,
+                onPressed: _handleContinueStep,
               ),
             ),
           ],

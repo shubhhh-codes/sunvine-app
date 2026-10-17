@@ -83,6 +83,15 @@ class CreateQuotationController extends ChangeNotifier {
   String get phase => _phase;
   double get sanctionedLoadKw => _sanctionedLoadKw;
 
+  bool get isStep1Filled {
+    final trimmedName = _customerName.trim();
+    final digits = _customerPhone.replaceAll(RegExp(r'\D'), '');
+    final trimmedLoc = _customerLocation.trim();
+    return trimmedName.isNotEmpty &&
+        digits.length == 10 &&
+        trimmedLoc.isNotEmpty;
+  }
+
   String get projectType => _projectType;
   bool get enableExtraTransport => _enableExtraTransport;
   double get extraTransportAmount => _extraTransportAmount;
@@ -165,7 +174,10 @@ class CreateQuotationController extends ChangeNotifier {
   void _initDefaults() {
     if (_catalog != null) {
       if (_catalog!.modules.isNotEmpty) {
-        _selectedModule = _catalog!.modules.first;
+        _selectedModule = _catalog!.modules.firstWhere(
+          (m) => m.brand.toLowerCase().contains('aps') && m.wattage == 550,
+          orElse: () => _catalog!.modules.first,
+        );
       }
       if (_catalog!.solarBanks.isNotEmpty) {
         _selectedBank = _catalog!.solarBanks.first;
@@ -317,6 +329,10 @@ class CreateQuotationController extends ChangeNotifier {
   // Setters for Step 2
   void setCapacityKw(double kw) {
     _selectedCapacityKw = kw;
+    final compat = compatibleModules;
+    if (compat.isNotEmpty && !compat.any((m) => m.id == _selectedModule?.id)) {
+      _selectedModule = compat.first;
+    }
     _autoMatchInverter();
     _updateDefaultMargin();
     if (!isMarginBased) {
@@ -656,6 +672,7 @@ class CreateQuotationController extends ChangeNotifier {
       notifyListeners();
       Future.delayed(const Duration(milliseconds: 300), () {
         _isNavigating = false;
+        notifyListeners();
       });
       return true;
     }
@@ -670,6 +687,7 @@ class CreateQuotationController extends ChangeNotifier {
       notifyListeners();
       Future.delayed(const Duration(milliseconds: 300), () {
         _isNavigating = false;
+        notifyListeners();
       });
     }
   }
@@ -689,6 +707,7 @@ class CreateQuotationController extends ChangeNotifier {
       notifyListeners();
       Future.delayed(const Duration(milliseconds: 300), () {
         _isNavigating = false;
+        notifyListeners();
       });
     }
   }
@@ -804,39 +823,39 @@ class CreateQuotationController extends ChangeNotifier {
     return const CatalogBootstrapModel(
       modules: [
         SolarModuleModel(
+          id: 'mod_aps_550',
+          brand: 'APS 550W',
+          model: '550W TOPCon Mono Bifacial',
+          wattage: 550,
+          ratePerWpInr: 20.5,
+          cellType: 'TOPCon',
+          technology: 'TOPCon Mono Bifacial',
+        ),
+        SolarModuleModel(
           id: 'mod_adani_550',
           brand: 'Adani Solar',
-          model: 'Vertex Mono PERC Bifacial',
+          model: '550W Vertex Mono PERC Bifacial',
           wattage: 550,
           ratePerWpInr: 21.5,
           cellType: 'Mono PERC',
           technology: 'Bifacial Dual Glass',
         ),
         SolarModuleModel(
-          id: 'mod_waaree_585',
-          brand: 'Waaree Energies',
-          model: 'HyperIon TOPCon Dual Glass',
-          wattage: 585,
-          ratePerWpInr: 22.8,
-          cellType: 'TOPCon',
-          technology: 'Bifacial Dual Glass',
-        ),
-        SolarModuleModel(
           id: 'mod_rayzon_550',
           brand: 'Rayzon Solar',
-          model: 'Albus TOPCon High Efficiency',
+          model: '550W Albus TOPCon High Efficiency',
           wattage: 550,
           ratePerWpInr: 21.0,
           cellType: 'TOPCon',
           technology: 'Bifacial Dual Glass',
         ),
         SolarModuleModel(
-          id: 'mod_aps_550',
-          brand: 'APS Solar',
-          model: 'Dual Glass 550W',
-          wattage: 550,
-          ratePerWpInr: 20.5,
-          cellType: 'Mono PERC',
+          id: 'mod_waaree_585',
+          brand: 'Waaree Energies',
+          model: '585W HyperIon TOPCon Dual Glass',
+          wattage: 585,
+          ratePerWpInr: 22.8,
+          cellType: 'TOPCon',
           technology: 'Bifacial Dual Glass',
         ),
       ],

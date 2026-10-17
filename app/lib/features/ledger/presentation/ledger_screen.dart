@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/widgets.dart';
@@ -40,13 +41,19 @@ class _LedgerScreenState extends State<LedgerScreen> {
         child: ListenableBuilder(
           listenable: widget.controller,
           builder: (context, _) {
-            if (widget.controller.isLoading && widget.controller.entries.isEmpty) {
-              return const SunLoadingIndicator(message: 'Loading financial ledger...');
+            if (widget.controller.isLoading &&
+                widget.controller.entries.isEmpty) {
+              return const SunLoadingIndicator(
+                message: 'Loading financial ledger...',
+              );
             }
 
-            if (widget.controller.status == LedgerStatus.error && widget.controller.entries.isEmpty) {
+            if (widget.controller.status == LedgerStatus.error &&
+                widget.controller.entries.isEmpty) {
               return SunErrorView(
-                message: widget.controller.errorMessage ?? 'Unable to fetch ledger data',
+                message:
+                    widget.controller.errorMessage ??
+                    'Unable to fetch ledger data',
                 onRetry: () => widget.controller.loadLedger(),
               );
             }
@@ -58,96 +65,158 @@ class _LedgerScreenState extends State<LedgerScreen> {
               color: AppColors.emerald,
               backgroundColor: AppColors.surface,
               onRefresh: () => widget.controller.loadLedger(),
-              child: ListView(
-                padding: const EdgeInsets.all(16.0),
-                children: [
-                  if (summary != null) ...[
-                    SunCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('NET DISBURSED BALANCE', style: AppTypography.labelSmall),
-                          const SizedBox(height: 8),
-                          Text('₹${summary.netBalance.toStringAsFixed(2)}', style: AppTypography.monoLarge.copyWith(fontSize: 28, color: AppColors.emerald)),
-                          const Divider(height: 24, color: AppColors.border),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 720),
+                  child: ListView(
+                    padding: const EdgeInsets.all(16.0),
+                    children: [
+                      if (summary != null) ...[
+                        SunCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Total Credit (Earnings)', style: AppTypography.bodySmall),
-                                  const SizedBox(height: 4),
-                                  Text('₹${summary.totalCredit.toStringAsFixed(2)}', style: AppTypography.monoMedium.copyWith(color: AppColors.emerald)),
-                                ],
+                              Text(
+                                'NET DISBURSED BALANCE',
+                                style: AppTypography.labelSmall,
                               ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                              const SizedBox(height: 8),
+                              Text(
+                                '₹${summary.netBalance.toStringAsFixed(2)}',
+                                style: AppTypography.monoLarge.copyWith(
+                                  fontSize: 28,
+                                  color: AppColors.emerald,
+                                ),
+                              ),
+                              const Divider(
+                                height: 24,
+                                color: AppColors.border,
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text('Total Debit (Payouts)', style: AppTypography.bodySmall),
-                                  const SizedBox(height: 4),
-                                  Text('₹${summary.totalDebit.toStringAsFixed(2)}', style: AppTypography.monoMedium.copyWith(color: AppColors.amber)),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Total Credit (Earnings)',
+                                        style: AppTypography.bodySmall,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '₹${summary.totalCredit.toStringAsFixed(2)}',
+                                        style: AppTypography.monoMedium
+                                            .copyWith(color: AppColors.emerald),
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        'Total Debit (Payouts)',
+                                        style: AppTypography.bodySmall,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '₹${summary.totalDebit.toStringAsFixed(2)}',
+                                        style: AppTypography.monoMedium
+                                            .copyWith(color: AppColors.amber),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ],
                           ),
-                        ],
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+
+                      Text(
+                        'TRANSACTION ENTRIES',
+                        style: AppTypography.labelSmall,
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+                      const SizedBox(height: 10),
 
-                  Text('TRANSACTION ENTRIES', style: AppTypography.labelSmall),
-                  const SizedBox(height: 10),
-
-                  if (entries.isEmpty)
-                    const SunEmptyState(
-                      icon: Icons.account_balance_wallet_outlined,
-                      title: 'No ledger entries recorded',
-                      description: 'Commission disbursements will be logged here.',
-                    )
-                  else
-                    ...entries.map((entry) {
-                      final isCredit = entry.entryType == 'CREDIT';
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10.0),
-                        child: SunCard(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      if (entries.isEmpty)
+                        const SunEmptyState(
+                          icon: Icons.account_balance_wallet_outlined,
+                          title: 'No ledger entries recorded',
+                          description:
+                              'Commission disbursements will be logged here.',
+                        )
+                      else
+                        ...entries.map((entry) {
+                          final isCredit = entry.entryType == 'CREDIT';
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10.0),
+                            child: SunCard(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(entry.voucherNo, style: AppTypography.monoSmall.copyWith(color: AppColors.emerald)),
-                                  SunBadge(
-                                    label: entry.entryType,
-                                    variant: isCredit ? SunBadgeVariant.emerald : SunBadgeVariant.amber,
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        entry.voucherNo,
+                                        style: AppTypography.monoSmall.copyWith(
+                                          color: AppColors.emerald,
+                                        ),
+                                      ),
+                                      SunBadge(
+                                        label: entry.entryType,
+                                        variant: isCredit
+                                            ? SunBadgeVariant.emerald
+                                            : SunBadgeVariant.amber,
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(child: Text(entry.customerName, style: AppTypography.titleMedium)),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          entry.customerName,
+                                          style: AppTypography.titleMedium,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${isCredit ? "+" : "-"}₹${entry.amount.toStringAsFixed(0)}',
+                                        style: AppTypography.monoMedium
+                                            .copyWith(
+                                              color: isCredit
+                                                  ? AppColors.emerald
+                                                  : AppColors.amber,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
                                   Text(
-                                    '${isCredit ? "+" : "-"}₹${entry.amount.toStringAsFixed(0)}',
-                                    style: AppTypography.monoMedium.copyWith(
-                                      color: isCredit ? AppColors.emerald : AppColors.amber,
+                                    entry.narration,
+                                    style: AppTypography.bodySmall,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    '${entry.entryDate} • Balance: ₹${entry.runningBalance.toStringAsFixed(0)}',
+                                    style: AppTypography.monoSmall.copyWith(
+                                      color: AppColors.textMuted,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 4),
-                              Text(entry.narration, style: AppTypography.bodySmall),
-                              const SizedBox(height: 6),
-                              Text('${entry.entryDate} • Balance: ₹${entry.runningBalance.toStringAsFixed(0)}', style: AppTypography.monoSmall.copyWith(color: AppColors.textMuted)),
-                            ],
-                          ),
-                        ),
-                      );
-                    }),
-                ],
+                            ),
+                          );
+                        }),
+                    ],
+                  ),
+                ),
               ),
             );
           },

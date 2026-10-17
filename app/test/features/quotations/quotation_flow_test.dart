@@ -7,8 +7,10 @@ import 'package:sunvine_epc/features/quotations/domain/models/catalog_models.dar
 import 'package:sunvine_epc/features/quotations/domain/models/quotation_model.dart';
 import 'package:sunvine_epc/core/theme/components/sun_button.dart';
 import 'package:sunvine_epc/core/theme/components/sun_card.dart';
+import 'package:sunvine_epc/core/theme/app_tokens.dart';
 import 'package:sunvine_epc/features/quotations/presentation/controllers/create_quotation_controller.dart';
 import 'package:sunvine_epc/features/quotations/presentation/create_quotation_stepper_screen.dart';
+import 'package:sunvine_epc/features/quotations/presentation/quotation_detail_screen.dart';
 import 'package:sunvine_epc/features/quotations/presentation/steps/step1_customer_discom.dart';
 import 'package:sunvine_epc/features/quotations/presentation/steps/step2_solar_sizing.dart';
 
@@ -208,6 +210,26 @@ void main() {
 
       // Now validateStep1 passes
       expect(controller.validateStep1(), true);
+    });
+
+    test('isStep1Filled returns true only when name, 10-digit phone, and location are non-empty', () {
+      expect(controller.isStep1Filled, false);
+
+      controller.setCustomerName('Rahul Sharma');
+      expect(controller.isStep1Filled, false);
+
+      controller.setCustomerPhone('98765');
+      expect(controller.isStep1Filled, false);
+
+      controller.setCustomerPhone('9876543210');
+      expect(controller.isStep1Filled, false);
+
+      controller.setCustomerLocation('Surat');
+      expect(controller.isStep1Filled, true);
+
+      // Clearing any field sets it back to false
+      controller.setCustomerName('');
+      expect(controller.isStep1Filled, false);
     });
 
     test('nextStep() is blocked on Step 1 if validation fails', () {
@@ -523,6 +545,29 @@ void main() {
       },
     );
 
+    testWidgets(
+      'SunButton renders with subdued styling when isSubdued is true',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: SunButton(
+                  text: 'Subdued Action',
+                  isSubdued: true,
+                  onPressed: () {},
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final button = tester.widget<SunButton>(find.byType(SunButton));
+        expect(button.isSubdued, true);
+        expect(find.text('Subdued Action'), findsOneWidget);
+      },
+    );
+
     testWidgets('SunCard handles tap callbacks and animates states', (
       tester,
     ) async {
@@ -596,6 +641,75 @@ void main() {
     );
 
     testWidgets(
+      'Bottom bar in CreateQuotationStepperScreen hides when keyboard is open and shows when closed',
+      (tester) async {
+        final testUser = DealerUser(
+          id: 'usr_test_kbd',
+          dealerCode: 'SV-DLR-0104',
+          firmName: 'Sunvine Energy Solutions',
+          contactPerson: 'Authorized Dealer',
+          mobile: '9876543210',
+          city: 'Rajkot',
+          state: 'Gujarat',
+          discom: 'PGVCL',
+          tier: 'gold',
+          maxMarginCapPerKw: 6000.0,
+          assignedStaffId: 'staff_1',
+          category: 'Margin Based',
+          pricingConfig: const {},
+        );
+
+        final controller = CreateQuotationController(
+          repository: MockQuotationsRepo(),
+          currentUser: testUser,
+        );
+
+        // Initially no keyboard inset -> Continue button is visible
+        await tester.pumpWidget(
+          MaterialApp(
+            home: MediaQuery(
+              data: const MediaQueryData(viewInsets: EdgeInsets.zero),
+              child: CreateQuotationStepperScreen(controller: controller),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.widgetWithText(SunButton, 'Continue'), findsOneWidget);
+
+        // Simulate on-screen keyboard open (e.g. 300px bottom inset)
+        await tester.pumpWidget(
+          MaterialApp(
+            home: MediaQuery(
+              data: const MediaQueryData(
+                viewInsets: EdgeInsets.only(bottom: 300),
+              ),
+              child: CreateQuotationStepperScreen(controller: controller),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Bottom bar and Continue button are hidden to prevent view squeezing
+        expect(find.widgetWithText(SunButton, 'Continue'), findsNothing);
+
+        // Keyboard closes
+        await tester.pumpWidget(
+          MaterialApp(
+            home: MediaQuery(
+              data: const MediaQueryData(viewInsets: EdgeInsets.zero),
+              child: CreateQuotationStepperScreen(controller: controller),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Continue button reappears at bottom
+        expect(find.widgetWithText(SunButton, 'Continue'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
       'Step2SolarSizing renders gracefully on narrow viewports (320px width)',
       (tester) async {
         tester.view.physicalSize = const Size(320, 640);
@@ -640,5 +754,311 @@ void main() {
         expect(tester.takeException(), isNull);
       },
     );
+
+    testWidgets(
+      'Continue button in CreateQuotationStepperScreen starts subdued, tapping it triggers validation errors, and filling details removes subdued state',
+      (tester) async {
+        final testUser = DealerUser(
+          id: 'usr_test_subdued',
+          dealerCode: 'SV-DLR-0104',
+          firmName: 'Sunvine Energy Solutions',
+          contactPerson: 'Authorized Dealer',
+          mobile: '9876543210',
+          city: 'Rajkot',
+          state: 'Gujarat',
+          discom: 'PGVCL',
+          tier: 'gold',
+          maxMarginCapPerKw: 6000.0,
+          assignedStaffId: 'staff_1',
+          category: 'Margin Based',
+          pricingConfig: const {},
+        );
+
+        final controller = CreateQuotationController(
+          repository: MockQuotationsRepo(),
+          currentUser: testUser,
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: CreateQuotationStepperScreen(controller: controller),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Find Continue SunButton
+        final continueFinder = find.widgetWithText(SunButton, 'Continue');
+        expect(continueFinder, findsOneWidget);
+
+        SunButton continueButton = tester.widget<SunButton>(continueFinder);
+        expect(continueButton.isSubdued, true);
+
+        // Errors not shown yet
+        expect(find.text('Please enter customer full name'), findsNothing);
+
+        // Tap subdued Continue button -> triggers validation and errors appear
+        await tester.tap(continueFinder);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Please enter customer full name'), findsOneWidget);
+        expect(find.text('Please enter mobile number'), findsOneWidget);
+        expect(
+          find.text('Please enter installation city or pincode'),
+          findsOneWidget,
+        );
+        expect(controller.currentStep, 0); // Stays on Step 1
+
+        // Now enter valid details in all 3 required fields
+        await tester.enterText(find.byType(TextFormField).at(0), 'Kiran Patel');
+        await tester.enterText(find.byType(TextFormField).at(1), '9876543210');
+        await tester.enterText(find.byType(TextFormField).at(2), 'Ahmedabad');
+        await tester.pumpAndSettle();
+
+        // Continue button is now not subdued
+        continueButton = tester.widget<SunButton>(continueFinder);
+        expect(continueButton.isSubdued, false);
+
+        // Tap Continue -> advances to step 1 (Solar Tech)
+        await tester.tap(continueFinder);
+        await tester.pumpAndSettle();
+        expect(controller.currentStep, 1);
+        expect(find.textContaining('System Capacity (kW)'), findsOneWidget);
+
+        // Verify Back button exists and works on Step 1 (Solar Tech)
+        final backFinder = find.widgetWithText(SunButton, 'Back');
+        expect(backFinder, findsOneWidget);
+
+        // Tap Back -> returns to step 0 (Customer)
+        await tester.tap(backFinder);
+        await tester.pumpAndSettle();
+        expect(controller.currentStep, 0);
+
+        // Tap Continue -> moves forward to step 1 (Solar Tech)
+        await tester.tap(continueFinder);
+        await tester.pumpAndSettle();
+        expect(controller.currentStep, 1);
+
+        // Tap Continue on step 1 -> moves forward to step 2 (Pricing)
+        await tester.tap(continueFinder);
+        await tester.pumpAndSettle();
+        expect(controller.currentStep, 2);
+      },
+    );
+
+    testWidgets(
+      'AppBar back button and system back gesture transition to previous step when currentStep > 0',
+      (tester) async {
+        final testUser = DealerUser(
+          id: 'usr_test_back',
+          dealerCode: 'SV-DLR-0104',
+          firmName: 'Sunvine Energy Solutions',
+          contactPerson: 'Authorized Dealer',
+          mobile: '9876543210',
+          city: 'Rajkot',
+          state: 'Gujarat',
+          discom: 'PGVCL',
+          tier: 'gold',
+          maxMarginCapPerKw: 6000.0,
+          assignedStaffId: 'staff_1',
+          category: 'Margin Based',
+          pricingConfig: const {},
+        );
+
+        final controller = CreateQuotationController(
+          repository: MockQuotationsRepo(),
+          currentUser: testUser,
+        );
+
+        // Fill step 0 and advance to step 1
+        controller.setCustomerName('Rahul Sharma');
+        controller.setCustomerPhone('9876543210');
+        controller.setCustomerLocation('Rajkot');
+
+        bool pagePopped = false;
+        final observer = _PopTestObserver(onPopped: () => pagePopped = true);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            navigatorObservers: [observer],
+            home: CreateQuotationStepperScreen(controller: controller),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Advance to step 1 via UI Continue button
+        final continueFinder = find.widgetWithText(SunButton, 'Continue');
+        await tester.tap(continueFinder);
+        await tester.pump(const Duration(milliseconds: 350));
+        await tester.pumpAndSettle();
+        expect(controller.currentStep, 1);
+
+        // 1. Tap AppBar back arrow
+        final appbarBack = find.byIcon(Icons.arrow_back);
+        expect(appbarBack, findsOneWidget);
+        await tester.tap(appbarBack);
+        await tester.pump(const Duration(milliseconds: 350));
+        await tester.pumpAndSettle();
+
+        // Should retreat to Step 0 without popping the route
+        expect(controller.currentStep, 0);
+        expect(pagePopped, false);
+
+        // Advance to step 1 again via Continue button
+        await tester.tap(continueFinder);
+        await tester.pump(const Duration(milliseconds: 350));
+        await tester.pumpAndSettle();
+        expect(controller.currentStep, 1);
+
+        // 2. Simulate system back button via tester.binding.handlePopRoute()
+        final popHandled = await tester.binding.handlePopRoute();
+        await tester.pump(const Duration(milliseconds: 350));
+        await tester.pumpAndSettle();
+
+        expect(popHandled, true);
+        expect(controller.currentStep, 0);
+        expect(pagePopped, false);
+      },
+    );
+
+    testWidgets(
+      'Step2SolarSizing renders with zero overflow on device screen dimensions (360px and 392px)',
+      (tester) async {
+        for (final width in [320.0, 360.0, 392.0, 412.0]) {
+          tester.view.physicalSize = Size(width, 800);
+          tester.view.devicePixelRatio = 1.0;
+
+          final testUser = DealerUser(
+            id: 'usr_test_dims',
+            dealerCode: 'SV-DLR-0104',
+            firmName: 'Sunvine Energy Solutions',
+            contactPerson: 'Authorized Dealer',
+            mobile: '9876543210',
+            city: 'Rajkot',
+            state: 'Gujarat',
+            discom: 'PGVCL',
+            tier: 'gold',
+            maxMarginCapPerKw: 6000.0,
+            assignedStaffId: 'staff_1',
+            category: 'Margin Based',
+            pricingConfig: const {},
+          );
+
+          final controller = CreateQuotationController(
+            repository: MockQuotationsRepo(),
+            currentUser: testUser,
+          );
+
+          await tester.pumpWidget(
+            MaterialApp(
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: Step2SolarSizing(controller: controller),
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          expect(tester.takeException(), isNull);
+        }
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+      },
+    );
+  });
+
+  group('Design System Tokens & Accessibility Tests', () {
+    test(
+      'AppTokens spacing and radii scale values are defined and monotonic',
+      () {
+        expect(AppSpacing.xs < AppSpacing.sm, true);
+        expect(AppSpacing.sm < AppSpacing.md, true);
+        expect(AppSpacing.md < AppSpacing.lg, true);
+        expect(AppSpacing.lg < AppSpacing.xl, true);
+        expect(AppSpacing.xl < AppSpacing.xxl, true);
+
+        expect(AppRadii.sm < AppRadii.md, true);
+        expect(AppRadii.md < AppRadii.lg, true);
+        expect(AppRadii.lg < AppRadii.xl, true);
+
+        expect(AppBreakpoints.maxContentWidth, 720.0);
+        expect(AppComponentDimensions.minTouchTarget, 48.0);
+      },
+    );
+
+    testWidgets('SunButton respects platform disableAnimations setting', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(disableAnimations: true),
+            child: Scaffold(
+              body: Center(
+                child: SunButton(text: 'Submit Fast', onPressed: () {}),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final animatedScale = tester.widget<AnimatedScale>(
+        find.byType(AnimatedScale),
+      );
+      expect(animatedScale.duration, Duration.zero);
+    });
+  });
+
+  group('QuotationDetailScreen Rendering & Interaction Tests', () {
+    testWidgets(
+      'QuotationDetailScreen renders customer details, financials, and constrained layout',
+      (tester) async {
+        final mockQuote = {
+          'id': 'SV-QUOTE-TEST-001',
+          'quoteNumber': 'SV-QUOTE-TEST-001',
+          'customerName': 'Rameshbhai Patel',
+          'customerPhone': '9876543210',
+          'city': 'Rajkot',
+          'discom': 'PGVCL',
+          'systemCapacityKW': 3.3,
+          'moduleCount': 6,
+          'totalAmount': 195000.0,
+          'subsidyAmount': 78000.0,
+          'netPayable': 117000.0,
+          'status': 'Active / Sent',
+        };
+
+        await tester.pumpWidget(
+          MaterialApp(home: QuotationDetailScreen(quoteData: mockQuote)),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('SV-QUOTE-TEST-001'), findsOneWidget);
+        expect(find.text('Rameshbhai Patel'), findsWidgets);
+        expect(find.text('3.3 kW'), findsOneWidget);
+        expect(find.text('1-Tap Share Proposal on WhatsApp'), findsOneWidget);
+
+        // Verify ConstrainedBox is present with maxWidth 720
+        final constrainedBoxes = tester.widgetList<ConstrainedBox>(
+          find.byWidgetPredicate(
+            (w) => w is ConstrainedBox && w.constraints.maxWidth == 720.0,
+          ),
+        );
+        expect(constrainedBoxes.isNotEmpty, true);
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 }
+
+class _PopTestObserver extends NavigatorObserver {
+  final VoidCallback onPopped;
+  _PopTestObserver({required this.onPopped});
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPop(route, previousRoute);
+    onPopped();
+  }
+}
+

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../app_colors.dart';
 import '../app_typography.dart';
 
@@ -50,25 +51,25 @@ class SunBadge extends StatelessWidget {
         break;
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: border, width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 12, color: text),
-            const SizedBox(width: 4),
+    return Semantics(
+      label: 'Status: $label',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: border, width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 12, color: text),
+              const SizedBox(width: 4),
+            ],
+            Text(label, style: AppTypography.labelSmall.copyWith(color: text)),
           ],
-          Text(
-            label,
-            style: AppTypography.labelSmall.copyWith(color: text),
-          ),
-        ],
+        ),
       ),
     );
   }

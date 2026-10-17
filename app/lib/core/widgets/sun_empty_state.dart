@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../theme/components/sun_button.dart';
@@ -55,7 +56,7 @@ class SunEmptyState extends StatelessWidget {
               SunButton(
                 text: actionLabel!,
                 width: 200,
-                height: 44,
+                height: 48,
                 onPressed: onAction,
               ),
             ],

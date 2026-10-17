@@ -30,17 +30,14 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
     8.0,
     10.0,
   ];
-  static const List<String> structures = [
-    'Standard Rooftop',
-    'Elevated Super Structure',
-    'High Rise',
-  ];
 
   @override
   void initState() {
     super.initState();
     _transportController = TextEditingController(
-      text: widget.controller.extraTransportAmount.toStringAsFixed(0),
+      text: widget.controller.extraTransportAmount > 0
+          ? widget.controller.extraTransportAmount.toStringAsFixed(0)
+          : '',
     );
   }
 
@@ -58,70 +55,82 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
     final compatibleModules = controller.compatibleModules;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Card matching Web STEP 1.2
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.electric_bolt,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'System Details',
-                      style: AppTypography.headlineMedium.copyWith(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'System capacity slab, manufacturer make & equipment configuration',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Text(
-                  'STEP 1.2',
-                  style: AppTypography.labelSmall.copyWith(
+          // Header Card matching Reference STEP 1.2
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.solar_power_outlined,
                     color: AppColors.textSecondary,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.8,
-                    fontSize: 10,
+                    size: 20,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'System Details',
+                        style: AppTypography.headlineMedium.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'System capacity slab, manufacturer make & equipment configuration',
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Text(
+                    'STEP 1.2',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.8,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
 
           // 1. SYSTEM CAPACITY (kW) SELECTOR — CUSTOM SMART DROPDOWN
           Container(
@@ -274,30 +283,35 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      isSelected
-                                          ? Icons.check_circle
-                                          : Icons.radio_button_unchecked,
-                                      color: isSelected
-                                          ? AppColors.primary
-                                          : AppColors.textSecondary,
-                                      size: 18,
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      '${kw.toStringAsFixed(kw == kw.roundToDouble() ? 0 : 1)} kW System',
-                                      style: AppTypography.bodyMedium.copyWith(
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        isSelected
+                                            ? Icons.check_circle
+                                            : Icons.radio_button_unchecked,
                                         color: isSelected
                                             ? AppColors.primary
-                                            : AppColors.textPrimary,
-                                        fontWeight: isSelected
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
+                                            : AppColors.textSecondary,
+                                        size: 18,
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          '${kw.toStringAsFixed(kw == kw.roundToDouble() ? 0 : 1)} kW System',
+                                          style: AppTypography.bodyMedium.copyWith(
+                                            color: isSelected
+                                                ? AppColors.primary
+                                                : AppColors.textPrimary,
+                                            fontWeight: isSelected
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
@@ -328,7 +342,7 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
           // 2. SOLAR PANEL SELECTION — CUSTOM SMART DROPDOWN
           Container(
@@ -400,7 +414,7 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
                               Expanded(
                                 child: Text(
                                   selectedModule != null
-                                      ? '${selectedModule.brand} ${selectedModule.wattage}W (${selectedModule.technology})'
+                                      ? '${selectedModule.brand} (${selectedModule.model.isNotEmpty ? selectedModule.model : "${selectedModule.wattage}W ${selectedModule.technology}"})'
                                       : '-- Select Compatible Solar Panel --',
                                   style: AppTypography.bodyMedium.copyWith(
                                     fontWeight: FontWeight.bold,
@@ -488,7 +502,7 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              '${mod.brand} ${mod.wattage}W',
+                                              '${mod.brand} (${mod.model.isNotEmpty ? mod.model : "${mod.wattage}W ${mod.technology}"})',
                                               style: AppTypography.bodyMedium
                                                   .copyWith(
                                                     color: isSelected
@@ -499,7 +513,7 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                             Text(
-                                              '${mod.brand} • ${mod.technology}',
+                                              '${mod.wattage}W • ${mod.cellType} • ${mod.technology}',
                                               style: AppTypography.labelSmall
                                                   .copyWith(
                                                     color:
@@ -551,21 +565,25 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
-          // 3. AUTO-GENERATED PLANT CAPACITY & HARDWARE TELEMETRY BANNER
+          // 3. AUTO-GENERATED PLANT CAPACITY & HARDWARE TELEMETRY BANNER (SIDE-BY-SIDE MATCHING REFERENCE)
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primary, width: 1.5),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.45),
+                width: 1.5,
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isCompact = constraints.maxWidth < 560;
+
+                final telemetryLeft = Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Container(
                       width: 40,
@@ -575,96 +593,147 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
-                        Icons.electric_bolt,
+                        Icons.bolt,
                         color: Colors.white,
                         size: 24,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              'AUTO-GENERATED PLANT CAPACITY',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 9,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.5,
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF047857),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  'AUTO-GENERATED PLANT CAPACITY',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                               ),
-                            ),
+                              Text(
+                                '${controller.panelCount} Panels × ${selectedModule?.wattage ?? 550}W (${selectedModule?.brand ?? "APS 550W"})',
+                                style: AppTypography.labelSmall.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 11,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            '${controller.panelCount} Panels × ${selectedModule?.wattage ?? 550}W (${selectedModule?.brand ?? "APS"})',
-                            style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${selectedKw.toStringAsFixed(1)} kW System (${controller.totalKwp} kWp)',
-                            style: AppTypography.headlineMedium.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 20,
-                            ),
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 6,
+                            runSpacing: 2,
+                            children: [
+                              Text(
+                                '${selectedKw.toStringAsFixed(selectedKw == selectedKw.roundToDouble() ? 0 : 1)} kW System',
+                                style: AppTypography.headlineMedium.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 20,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                              Text(
+                                '(${controller.totalKwp} kWp)',
+                                style: AppTypography.titleMedium.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
                   ],
-                ),
-                const Divider(color: AppColors.border, height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                );
+
+                final telemetryRight = Column(
+                  crossAxisAlignment: isCompact
+                      ? CrossAxisAlignment.start
+                      : CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Rooftop Area Required',
-                            style: AppTypography.bodySmall.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          Text(
-                            'Shadow-free roof space',
-                            style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.textSecondary,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
                     Text(
-                      '~${controller.rooftopAreaSqFt} Sq. Ft.',
-                      style: AppTypography.bodyLarge.copyWith(
+                      'Rooftop Area Required',
+                      style: AppTypography.labelSmall.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
+                        fontSize: 11,
+                      ),
+                    ),
+                    Text(
+                      'Shadow-free roof space',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.textSecondary,
+                        fontSize: 10,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '~${controller.rooftopAreaSqFt} Sq. Ft.',
+                      style: AppTypography.titleLarge.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primary,
+                        fontSize: 18,
                       ),
                     ),
                   ],
-                ),
-              ],
+                );
+
+                if (isCompact) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      telemetryLeft,
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        child: Divider(color: AppColors.border, height: 1),
+                      ),
+                      telemetryRight,
+                    ],
+                  );
+                }
+
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(flex: 3, child: telemetryLeft),
+                    Container(
+                      height: 44,
+                      width: 1,
+                      margin: const EdgeInsets.symmetric(horizontal: 12),
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                    ),
+                    Expanded(flex: 2, child: telemetryRight),
+                  ],
+                );
+              },
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
           // 4. PROJECT SCHEME & SUBSIDY ELIGIBILITY
           Container(
@@ -674,14 +743,15 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.border),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isCompact = constraints.maxWidth < 500;
+
+                final infoWidget = Row(
                   children: [
                     Container(
-                      width: 32,
-                      height: 32,
+                      width: 34,
+                      height: 34,
                       decoration: BoxDecoration(
                         color: AppColors.surfaceContainerHigh,
                         borderRadius: BorderRadius.circular(8),
@@ -696,6 +766,7 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             'Project Scheme & Subsidy Eligibility',
@@ -704,7 +775,7 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
                             ),
                           ),
                           Text(
-                            'Residential (PM Surya Ghar Subsidy up to ₹78,000) or Commercial',
+                            'Residential (PM Surya Ghar Subsidy up to ₹78,000) or Commercial/Industrial',
                             style: AppTypography.labelSmall.copyWith(
                               color: AppColors.textSecondary,
                               fontSize: 10,
@@ -714,52 +785,79 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  initialValue: controller.projectType,
-                  isExpanded: true,
-                  dropdownColor: AppColors.surface,
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    filled: true,
-                    fillColor: AppColors.surfaceContainerHigh,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.border),
+                );
+
+                final dropdownWidget = Container(
+                  height: 42,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: controller.projectType,
+                      isExpanded: true,
+                      dropdownColor: AppColors.surface,
+                      icon: const Icon(
+                        Icons.arrow_drop_down,
+                        color: AppColors.textSecondary,
+                      ),
+                      style: AppTypography.bodySmall.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                        fontSize: 12,
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'Residential',
+                          child: Text(
+                            'Residential (PM Surya Ghar Subsidy Eligible)',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Commercial',
+                          child: Text(
+                            'Commercial / Industrial (No Subsidy)',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          controller.setProjectType(val);
+                        }
+                      },
                     ),
                   ),
-                  items: const [
-                    DropdownMenuItem(
-                      value: 'Residential',
-                      child: Text(
-                        'Residential (PM Surya Ghar Subsidy Eligible)',
-                        style: TextStyle(fontSize: 13),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    DropdownMenuItem(
-                      value: 'Commercial',
-                      child: Text(
-                        'Commercial / Industrial (Accelerated Depr.)',
-                        style: TextStyle(fontSize: 13),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
+                );
+
+                if (isCompact) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      infoWidget,
+                      const SizedBox(height: 10),
+                      dropdownWidget,
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(child: infoWidget),
+                    const SizedBox(width: 14),
+                    SizedBox(width: 290, child: dropdownWidget),
                   ],
-                  onChanged: (val) {
-                    if (val != null) controller.setProjectType(val);
-                  },
-                ),
-              ],
+                );
+              },
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
-          // 5. EXTRA OUTSTATION TRANSPORT / FREIGHT CHARGE TOGGLE
+          // 5. ADD TRANSPORT / FREIGHT CHARGE TOGGLE
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -773,15 +871,19 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
                 Row(
                   children: [
                     Container(
-                      width: 32,
-                      height: 32,
+                      width: 34,
+                      height: 34,
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceContainerHigh,
+                        color: controller.enableExtraTransport
+                            ? AppColors.primary.withValues(alpha: 0.15)
+                            : AppColors.surfaceContainerHigh,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.local_shipping_outlined,
-                        color: AppColors.textSecondary,
+                        color: controller.enableExtraTransport
+                            ? AppColors.primary
+                            : AppColors.textSecondary,
                         size: 18,
                       ),
                     ),
@@ -789,29 +891,66 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            'Extra Outstation Freight',
-                            style: AppTypography.bodySmall.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Add Transport / Freight Charge',
+                                  style: AppTypography.bodySmall.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              if (controller.enableExtraTransport &&
+                                  controller.extraTransportAmount > 0) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.15,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    '+ ₹${controller.extraTransportAmount.toStringAsFixed(0)}',
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                           Text(
-                            'Enable if delivery is outside standard logistics hub',
+                            'Toggle ON to manually include outstation doorstep transport / freight charges in this quotation & PDF.',
                             style: AppTypography.labelSmall.copyWith(
                               color: AppColors.textSecondary,
                               fontSize: 10,
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
                     Switch(
                       value: controller.enableExtraTransport,
                       activeThumbColor: AppColors.primary,
+                      activeTrackColor: AppColors.primary.withValues(
+                        alpha: 0.3,
+                      ),
                       onChanged: (val) => controller.toggleExtraTransport(val),
                     ),
                   ],
@@ -819,20 +958,26 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
                 if (controller.enableExtraTransport) ...[
                   const Divider(color: AppColors.border, height: 20),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Amount (₹):',
-                        style: AppTypography.bodySmall.copyWith(
-                          fontWeight: FontWeight.bold,
+                      Flexible(
+                        child: Text(
+                          'Manual Extra Transport Charge (₹):',
+                          style: AppTypography.bodySmall.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       SizedBox(
-                        width: 120,
+                        width: 130,
                         height: 40,
                         child: TextField(
                           controller: _transportController,
                           keyboardType: TextInputType.number,
+                          style: AppTypography.bodySmall.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                           decoration: InputDecoration(
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 10,
@@ -864,152 +1009,7 @@ class _Step2SolarSizingState extends State<Step2SolarSizing> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
-
-          // 6. MOUNTING STRUCTURE TYPE
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Mounting Structure Elevation',
-                  style: AppTypography.bodySmall.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: structures.map((s) {
-                    final isSel = controller.structureType == s;
-                    return InkWell(
-                      onTap: () => controller.setStructureType(s),
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSel
-                              ? AppColors.primary.withValues(alpha: 0.15)
-                              : AppColors.surfaceContainerHigh,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isSel ? AppColors.primary : AppColors.border,
-                            width: isSel ? 1.5 : 1.0,
-                          ),
-                        ),
-                        child: Text(
-                          s,
-                          style: AppTypography.bodySmall.copyWith(
-                            color: isSel
-                                ? AppColors.primary
-                                : AppColors.textPrimary,
-                            fontWeight: isSel
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // 7. INVERTER & BOS BREAKDOWN
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.inventory_2_outlined,
-                      color: AppColors.secondary,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Included Inverter & Turnkey BOS',
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.bodyMedium.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const Divider(color: AppColors.border, height: 20),
-                _buildSpecRow(
-                  'Inverter',
-                  '${controller.selectedInverter?.brand ?? "Solis/Growatt"} ${selectedKw.toStringAsFixed(1)}kW On-Grid',
-                ),
-                _buildSpecRow(
-                  'Structure',
-                  'Hot Dip Galvanized Iron (HDGI) - ${controller.structureType}',
-                ),
-                _buildSpecRow(
-                  'Protection',
-                  'ACDB, DCDB & Lightning Protection System',
-                ),
-                _buildSpecRow(
-                  'Cables',
-                  '4 sq mm UV-Resistant Solar DC Cables & Conduits',
-                ),
-                _buildSpecRow(
-                  'Installation',
-                  'Turnkey Erection, DISCOM Net Metering & Commissioning',
-                ),
-              ],
-            ),
-          ),
           const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSpecRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 90,
-            child: Text(
-              label,
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ),
         ],
       ),
     );

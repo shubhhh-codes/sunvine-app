@@ -7,6 +7,7 @@
     "dev": "node scripts/dev.js",
     "app": "cd app && flutter run --dart-define=GATEWAY_BASE_URL=https://sunvine-gateway-staging.sunvinerenewable.workers.dev",
     "app:launch": "powershell -ExecutionPolicy Bypass -File scripts/launch-app.ps1",
+    "app:desktop": "node scripts/serve-desktop.js",
     "app:clean": "cd app && flutter clean && flutter pub get",
     "app:analyze": "cd app && flutter analyze",
     "app:test": "cd app && flutter test",
